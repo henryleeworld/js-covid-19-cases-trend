@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta property="og:title" content="武漢肺炎（新型冠狀病毒）病例趨勢" />
+    <meta property="og:description" content="武漢肺炎（新型冠狀病毒）疫情重擊國內經濟，無薪假人數持續飆升；近日疫情趨穩，各行各業都期盼景氣能夠逐漸恢復。" />
+    <meta property="og:locale" content="zh_TW" />
+    <meta property="og:type" content="website" />
+    <link rel="stylesheet" type="text/css" href="css/cases-trend.css">
+    <title>武漢肺炎（新型冠狀病毒）病例趨勢</title>
+</head>
+<body>
+    <div id="root">
+        <header>
+        </header>
+        <div class="ctapp">
+            <main id="main">
+                <graph v-if="covidData.length > 0" :graph-data="graphData" :day="day" :resize="isHidden" v-bind.sync="graphAttributes"></graph>
+                <div v-if="covidData.length > 0" class="nav">
+                    <div class="navelement">
+                        <img v-if="paused" @click="play" src="images/play.svg" alt="Play" style="width: 3rem;">
+                        <img v-if="!paused" @click="play" src="images/pause.svg" alt="Pause" style="width: 3rem;">
+                    </div>
+                    <div class="navelement">
+                        <time class="h2" :datetime="formatDate(minDay > 0 ? dates[day - 1] : dates[dates.length - 1])">{{ formatDate(minDay > 0 ? dates[day - 1] : dates[dates.length - 1]) }}</time>
+                    </div>
+                    <div class="navelement slidercontainer">
+                        <input v-if="dates.length > 7" type="range" :min="minDay > 0 ? minDay : dates.length" :max="dates.length" step="1" v-model="day" class="slider" @mousedown="pause" aria-label="Choose the current observation day">
+                    </div>
+                    <div class="navelement">
+                        <select v-model="selectedScale" @mousedown="pause" aria-Label="Select Scale">
+                            <option v-for="s in scale" v-bind:value="s">
+                                {{ s }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div v-if="!firstLoad && covidData.length == 0" class="nodata"><span>Not enough data for these parameters.</span></div>
+            </main>
+            <aside>
+                <div>
+                    <h2>客製化</h2>
+                    <label for="selectedData">選擇參數</label>
+                    <select id="selectedData" v-model="selectedData" @mousedown="pause">
+                        <option v-for="d in dataTypes" v-bind:value="d">
+                            {{ d }}
+                        </option>
+                    </select>
+                    <label for="selectedRegion">選擇地區</label>
+                    <select id="selectedRegion" v-model="selectedRegion" @mousedown="pause">
+                        <option v-for="s in regions" v-bind:value="s">
+                            {{ s }}
+                        </option>
+                    </select>
+                    <label for="selectedScale">選擇縮放</label>
+                    <select id="selectedScale" v-model="selectedScale" @mousedown="pause">
+                        <option v-for="s in scale" v-bind:value="s">
+                            {{ s }}
+                        </option>
+                    </select>
+                    <input type="checkbox" style="margin-top: 0.75rem;" id="showLabels" v-model="showLabels">
+                    <label for="showLabels">顯示標籤</label>
+                    <div>
+                        <input type="checkbox" style="margin-top: 0.75rem;" id="showTrendLine" v-model="showTrendLine">
+                        <label for="showTrendLine">顯示
+                            <select style="width: 3rem; min-width: 2rem; padding: 0rem; font-size: 0.75rem;" v-model="doublingTime" @mousedown="pause">
+                                <option v-for="d in doublingTimes" v-bind:value="d">
+                                    {{ d }}
+                                </option>
+                            </select>
+                            日加倍時間</label>
+                    </div>
+                </div>
+                <div class="countries">
+                    <h2>{{regionType}}</h2>
+                    <div class="search">
+                        <input id="searchField" v-model="searchField" placeholder="搜尋位置" aria-label="Search For A Location">
+                    </div>
+                    <div class="buttonwrapper">
+                        <button @click="deselectAll" aria-Label="Deselect All Regions">反向全選</button>
+                        <button @click="selectAll" aria-Label="Select All Regions">全選</button>
+                    </div>
+                    <p style="padding-top: 1rem;">顯示{{regionType}}至少有 {{minCasesInCountry}} {{selectedData}}</p>
+                    <ul>
+                        <li v-for="country in visibleCountries">
+                            <input type="checkbox" :id="country" :value="country" v-model="selectedCountries">
+                            <label :for="country">{{country}}</label>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="buttonwrapper">
+                        <button @click="createURL" @mousedown="pause">{{copied ? '連接複製到剪貼簿！' : '建立分享的連結'}}</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.51.1/plotly-basic.min.js" defer></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/plotly.js/1.51.1/plotly-locale-zh-tw.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js" defer></script>
+    <script src="js/cases-trend.js" defer></script>
+</body>
+</html>
