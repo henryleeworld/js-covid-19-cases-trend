@@ -311,7 +311,6 @@ let app = new Vue({
         },
 
         pullData(selectedData, selectedRegion, updateSelectedCountries = true) {
-console.log(Plotly.d3.csv);
             if (selectedRegion != 'US') {
                 let url;
                 if (selectedData == '確診病例') {
